@@ -13,15 +13,14 @@
     (if (or (checkwithin a b)
             (checkwithin b a))
         1 0)))
-(display
- (apply
-  + (map overlaps
-         (string-split
-          ;
-          ; pass input as command line argument,
-          ; because I cannot be asked to do files
-          ; 
-          ; $ racket d4p2.rkt "$(cat day4input.txt)"
-          ;
-          (command-line #:args (lines) lines)
-          "\n"))))
+
+(apply
+ +
+ (map overlaps
+      (string-split
+       ; pass input as command line argument,
+       ; because I cannot be asked to do files
+       ; 
+       ; $ racket d4p2.rkt "$(cat day4input.txt)"
+       (command-line #:args (lines) lines)
+       "\n")))
