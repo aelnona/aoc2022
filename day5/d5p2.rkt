@@ -3,6 +3,8 @@
 
 ; Yes :)
 
+(define numstacks 9)
+(define stackheight 8)
 (define (delast lst) (reverse (cdr (reverse lst))))
 (define (map-index proc lst)
   (map proc lst (range (length lst))))
@@ -23,15 +25,15 @@
                          (not (char=? #\space crate))
                          crate
                          null)))
-                    (range 0 9))
+                    (range 0 numstacks))
                )
              (string-split (first args) "\n"))]
        [cratelist  
         (map (lambda (i) (list-ref startcratelist i)
                 (remove* (list null)
                          (map (lambda (j) (list-ref (list-ref startcratelist j) i))
-                              (range 0 8))))
-             (range 0 9))]
+                              (range 0 stackheight))))
+             (range 0 numstacks))]
        [instructionlist
         (let ([ss (string-split (last args) "\n")])
           (map (lambda (lines)
@@ -58,14 +60,17 @@
                (cond [(= index source) newsource]
                      [(= index dest) newdest]
                      [else (list-ref cratelist index)]))
-             (range 0 9)))))
+             (range 0 numstacks)))))
 
   (define (run inslst cratelist)
     (if (null? inslst)
         cratelist
         (run (rest inslst)
              (exec-ins (first inslst) cratelist))))
-  (pretty-display
-   (run instructionlist cratelist)
-   )
-  )
+  (let ([don (run instructionlist cratelist)])
+    (pretty-display don)
+    (for-each (lambda (x)
+                (let ()
+                  (display (first x))))
+              don))
+  (newline))

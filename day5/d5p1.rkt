@@ -66,7 +66,8 @@
         cratelist
         (run (rest inslst)
              (exec-ins (first inslst) cratelist))))
-  (pretty-display
-   (run instructionlist cratelist)
-   )
-  )
+  (let ([don (run instructionlist cratelist)])
+    (pretty-display don)
+    (let ()
+      (for-each (lambda (x) (display (first x))) don)))
+  (newline))
