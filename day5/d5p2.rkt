@@ -38,11 +38,11 @@
                          (list-ref sss 3)
                          (list-ref sss 5))))
                ss))])
-
   (define (exec-ins ins cratelist)
     (let ([numcrates (string->number (first ins))]
           [source (- (string->number (first (rest ins))) 1)]
           [dest (- (string->number (last (rest ins))) 1)])
+
       (define (move i slist dlist)
         (if (<= i 0)
             (cons slist dlist)
@@ -61,6 +61,8 @@
                      [else (list-ref cratelist index)]))
              (range 0 9)))))
 
+  (pretty-display (exec-ins (first instructionlist) cratelist))
+  
   (define (run inslst cratelist)
     (if (null? inslst)
         cratelist
