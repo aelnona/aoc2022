@@ -1,6 +1,8 @@
 #lang racket
 (require racket/cmdline)
 
+; Yes :)
+
 (define (delast lst) (reverse (cdr (reverse lst))))
 (define (map-index proc lst)
   (map proc lst (range (length lst))))
@@ -42,17 +44,14 @@
     (let ([numcrates (string->number (first ins))]
           [source (- (string->number (first (rest ins))) 1)]
           [dest (- (string->number (last (rest ins))) 1)])
-
-      (define (move i slist dlist)
-        (if (<= i 0)
-            (cons slist dlist)
-            (move (- i 1)
-                  (rest slist)
-                  (cons (first slist) dlist))))
+      
+      (define (move slist dlist)
+        (cons (list-tail slist numcrates) ; new source
+              (append (take slist numcrates) dlist) ; new destination
+              ))
       (let* ([modiff
-             (move numcrates
-                   (list-ref cratelist source)
-                   (list-ref cratelist dest))]
+              (move (list-ref cratelist source)
+                    (list-ref cratelist dest))]
              [newsource (car modiff)]
              [newdest (cdr modiff)])
         (map (lambda (index)
@@ -61,8 +60,6 @@
                      [else (list-ref cratelist index)]))
              (range 0 9)))))
 
-  (pretty-display (exec-ins (first instructionlist) cratelist))
-  
   (define (run inslst cratelist)
     (if (null? inslst)
         cratelist
