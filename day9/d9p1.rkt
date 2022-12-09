@@ -4,8 +4,10 @@
 (define (make-pos x y) (cons x y))
 (define (get-x pos) (car pos))
 (define (get-y pos) (cdr pos))
-(define (add-pos posa posb) (make-pos (+ (get-x posa) (get-x posb))
-                                      (+ (get-y posa) (get-y posb))))
+(define (proc-pos proc posa posb) (make-pos (proc (get-x posa) (get-x posb))
+                                      (proc (get-y posa) (get-y posb))))
+(define (add-pos posa posb) (proc-pos + posa posb))
+(define (sub-pos posa posb) (proc-pos - posa posb))
 
 (define (make-rope head tail) (cons head tail))
 (define (get-head rope) (car rope))
@@ -14,32 +16,62 @@
   ; Moves rope head
   (define (move-head)
     (add-pos (get-head rope) vec))
-  ; Moves rope tail
-  (define (move-tail)
-    (make-pos 0 0))
-  ; Return new rope
-  (make-rope 
-   (move-head)
-   (move-tail)
-   ))
+  (let ([head (move-head)]
+        [tail (get-tail rope)])
+    ; Moves rope tail
+    (define (move-tail)
+      (define (check-far get-? get-!) (and (= (- (get-? head) (get-? tail)) 2)
+                                           (= (get-! head) (get-! tail))))
+      (let ([relhead (sub-pos head tail)])
+        (define dia?
+          (or (= (abs (get-x relhead)) 2)
+              (= (abs (get-y relhead)) 2)))
+        (define move-dia
+          (add-pos tail
+                   (make-pos (if (< 0 (get-x relhead))
+                                 1
+                                 (- 1))
+                             (if (< 0 (get-y relhead))
+                                 1
+                                 (- 1)))))
+        (cond
+          ;; If 2 in cardinal directions
+          ; If tail x is 2 less than head x, and tail y = head y
+          ; or tail y is 2 less than head y, and tail x = head x
+          [(or (check-far get-x get-y) (check-far get-y get-x))
+           (begin (display 'far) (add-pos tail vec))]
+          ;; If 2 in diagonal.
+          ; If head is a knight, bishop to it.
+          [dia? (begin (display 'dia) move-dia)]
+          [else (begin (display 'non) tail)]
+          )))
+  
+    ; Return new rope
+    (make-rope 
+     (move-head)
+     (move-tail)
+     )))
 
-(let* ([insns (string-split (command-line #:args (lines) lines) "\n" )]
-       ; convert instructions into vectors
-       [insvec 
-        (map (lambda (insns)
-               (let* ([ins (string-split insns)]
-                      [dir (list-ref ins 0)]
-                      [num (string->number (list-ref ins 1))])
-                 (make-pos (cond [(or (string=? dir "U")
-                                  (string=? dir "D")) 0]
-                             [(string=? dir "L") (- num)]
-                             [(string=? dir "R") num])
-                       (cond [(or (string=? dir "L")
-                                  (string=? dir "R")) 0]
-                             [(string=? dir "D") (- num)]
-                             [(string=? dir "U") num]))))
-             insns)])
-
+(let ([insvec
+       ; Convert instructions to vectors
+       (apply append
+              (map (lambda (insns)
+                     (let* ([ins (string-split insns)]
+                            [dir (list-ref ins 0)]
+                            [num (string->number (list-ref ins 1))]
+                            [numnum (/ num num)])
+                       (map (lambda (i)
+                              (make-pos (cond [(or (string=? dir "U")
+                                                   (string=? dir "D")) 0]
+                                              [(string=? dir "L") (- numnum)]
+                                              [(string=? dir "R") numnum])
+                                        (cond [(or (string=? dir "L")
+                                                   (string=? dir "R")) 0]
+                                              [(string=? dir "D") (- numnum)]
+                                              [(string=? dir "U") numnum])))
+                            (range 0 num))))
+                   (string-split (command-line #:args (lines) lines) "\n")))])
+  
   ; print instruction vectors
   (for-each displayln insvec)
   (newline)
