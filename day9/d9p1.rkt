@@ -20,7 +20,7 @@
         [tail (get-tail rope)])
     ; Moves rope tail
     (define (move-tail)
-      (define (check-far get-? get-!) (and (= (- (get-? head) (get-? tail)) 2)
+      (define (check-far get-? get-!) (and (= (abs (- (get-? head) (get-? tail))) 2)
                                            (= (get-! head) (get-! tail))))
       (let ([relhead (sub-pos head tail)])
         (define dia?
@@ -39,11 +39,15 @@
           ; If tail x is 2 less than head x, and tail y = head y
           ; or tail y is 2 less than head y, and tail x = head x
           [(or (check-far get-x get-y) (check-far get-y get-x))
-           (begin (display 'far) (add-pos tail vec))]
+           (begin0
+               (add-pos tail vec)
+             (display 'far)
+             (display head)
+             (displayln (add-pos tail vec)))]
           ;; If 2 in diagonal.
           ; If head is a knight, bishop to it.
-          [dia? (begin (display 'dia) move-dia)]
-          [else (begin (display 'non) tail)]
+          [dia? (begin (display 'dia) (display head) (displayln move-dia) move-dia)]
+          [else (begin (display 'non) (display head) (displayln tail) tail)]
           )))
   
     ; Return new rope
@@ -86,8 +90,20 @@
       (if (null? veclist)
           rope
           (begin
-            (pretty-display rope)
-            (movec (move-rope rope (first veclist))
-                   (rest veclist)))))
-    (movec rope insvec)
-  ))
+            (cons
+             rope
+             (movec (move-rope rope (first veclist))
+                    (rest veclist))))))
+
+    (define (get-tails ropes tails)
+      (if (not (pair? (cdr ropes)))
+          empty
+          (cons tails (get-tails (cdr ropes) (get-tail (car ropes))))))
+    (pretty-display (movec rope insvec))
+    (pretty-display
+    (length
+      (remove-duplicates 
+                          (get-tails
+                           (movec rope insvec)
+                           '() )))))
+    )
