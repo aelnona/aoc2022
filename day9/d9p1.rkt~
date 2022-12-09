@@ -1,0 +1,61 @@
+#lang racket
+(require racket/cmdline)
+
+(define (make-pos x y) (cons x y))
+(define (get-x pos) (car pos))
+(define (get-y pos) (cdr pos))
+(define (add-pos posa posb) (make-pos (+ (get-x posa) (get-x posb))
+                                      (+ (get-y posa) (get-y posb))))
+
+(define (make-rope head tail) (cons head tail))
+(define (get-head rope) (car rope))
+(define (get-tail rope) (cdr rope))
+(define (move-rope rope vec)
+  ; Moves rope head
+  (define (move-head)
+    (add-pos (get-head rope) vec))
+  ; Moves rope tail
+  (define (move-tail)
+    (make-pos 0 0))
+  ; Return new rope
+  (make-rope 
+   (move-head)
+   (move-tail)
+   ))
+
+(let* ([insns (string-split (command-line #:args (lines) lines) "\n" )]
+       ; convert instructions into vectors
+       [insvec 
+        (map (lambda (insns)
+               (let* ([ins (string-split insns)]
+                      [dir (list-ref ins 0)]
+                      [num (string->number (list-ref ins 1))])
+                 (make-pos (cond [(or (string=? dir "U")
+                                  (string=? dir "D")) 0]
+                             [(string=? dir "L") (- num)]
+                             [(string=? dir "R") num])
+                       (cond [(or (string=? dir "L")
+                                  (string=? dir "R")) 0]
+                             [(string=? dir "D") (- num)]
+                             [(string=? dir "U") num]))))
+             insns)])
+
+  ; print instruction vectors
+  (for-each displayln insvec)
+  (newline)
+  
+  ; Set start position of rope (0,0)
+  (let ([rope (make-rope
+               (make-pos 0 0)
+               (make-pos 0 0))])
+    (define (movec rope veclist)
+      ; Recursively moves the rope according to a list of vecs
+      ; (I think Racket does provide 'vector' but... whatever)
+      (if (null? (car veclist))
+          rope
+          (begin
+            (pretty-display rope)
+            (movec (move-rope rope (first veclist))
+                   (rest veclist)))))
+    (movec rope insvec)
+  ))
